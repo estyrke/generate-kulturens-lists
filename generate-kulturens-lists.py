@@ -303,9 +303,9 @@ def parse_attendance(filename):
 
 
 def main():
-    matrikel = parse_matrikel("matrikel.txt")
-    attendance = parse_attendance("LKSS Närvaro 2013v - Närvaro.csv")
-    create_pdf("hello.pdf", "narvarolista_tom.pdf", matrikel, attendance)
+    matrikel = parse_matrikel(MATRIKEL_FILE)
+    attendance = parse_attendance(ATTENDANCE_FILE)
+    create_pdf(OUTPUT_FILE, "narvarolista_tom.pdf", matrikel, attendance)
 
 
 if __name__=="__main__":
