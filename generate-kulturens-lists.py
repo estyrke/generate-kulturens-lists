@@ -1,5 +1,36 @@
 # -*- coding: utf-8 -*-
 
+__doc__ = """Skript för att generera närvarolistor till Kulturens.
+
+Indata är en närvarorapport i CSV-format ("1" indikerar närvaro och "-" frånvaro):
+
+       ,         ,      ,         ,Datum        ,2013-09-03   ,2013-09-10   ,[...]
+       ,         ,      ,         ,Tid          ,19-21:30     ,19-21:30     ,[...]
+       ,         ,      ,Kommentar,Aktivitet    ,Ordinarie rep,Ordinarie rep,[...]
+       ,         ,      ,         ,Total närvaro,29           ,30           ,[...]
+Förnamn,Efternamn,Stämma,         ,             ,             ,             ,[...]
+Hans   ,Lundgren ,dir   ,         ,20           ,1            ,-            ,[...]
+[...]
+
+Samt en matrikel i tabbseparerat "CSV"-format. Första raden är rubriker, resterande rader är medlemmar, en per rad.
+De intressanta kolumnerna är dessa:
+
+  Kolumn 0: Adressrad 1
+  Kolumn 1: Adressrad 2
+  Kolumn 2: Adressrad 3
+  Kolumn 3-5: ignoreras
+  Kolumn 6: Efternamn
+  Kolumn 7-8: ignoreras
+  Kolumn 9: Förnamn
+  Kolumn 10-14: ignoreras
+  Kolumn 15: Personnummer
+  Kolumn 16: Postadress
+  Kolumn 17-23: ignoreras
+  Kolumn 24: Hemtelefon
+  Kolumn 25: Mobiltelefon
+
+"""
+
 from config import *
 
 __author__ = 'emil'
@@ -67,7 +98,8 @@ def drawPage(canvas, members, attendance):
         addEvent(canvas, i, e)
 
     for i, m in enumerate(members):
-        addPerson(canvas, i, m, attendance.getAttendance(m.firstname, m.lastname))
+        att = attendance.getAttendance(m.firstname, m.lastname)
+        addPerson(canvas, i, m, att)
 
     canvas.restoreState()
 
@@ -114,8 +146,13 @@ def addEvent(canv, pos, event):
     canv.drawString(x, 200, str(event[3]))
     #canv.drawString(x, 175, "3")
 
+    # Add time if different from regular time. Rotate so adjacent entries don't overlap
     if event[1] and event[1] != "19-21:30":
-        canv.drawString(x, 620, str(event[1]))
+        canv.saveState()
+        canv.translate(x, 615)
+        canv.rotate( 45 )
+        canv.drawString(0, 0, str(event[1]))
+        canv.restoreState()
 
     canv.restoreState()
 
@@ -142,7 +179,9 @@ def create_pdf(filename, pdf_template_filename, members, attendance):
     pdf_report = canvas.Canvas(filename)
     template = MyTemplate(pdf_template_filename)
 
-    members.sort(key=lambda x: not x.leader)
+    members.sort(key=lambda m: m.firstname)
+    members.sort(key=lambda m: m.lastname)
+    members.sort(key=lambda m: not m.leader)
 
     for a in attendance.attendees:
         found = False
@@ -153,18 +192,17 @@ def create_pdf(filename, pdf_template_filename, members, attendance):
         if not found:
             print "Member %s %s not found" % (a[0], a[1])
 
-    while True:
-        a1, a2 = attendance.split(20)
+    for page in range(0, len(members), 15):
+        a2 = attendance
+        while True:
+            a1, a2 = a2.split(20)
 
-        for page in range(0, len(members), 15):
             template.beforeDrawPage(pdf_report)
             drawPage(pdf_report, members[page:page+15], a1)
             pdf_report.showPage()
 
-        if len(a2.events) == 0:
-            break
-
-        attendance = a2
+            if len(a2.events) == 0:
+                break
 
     pdf_report.save()
     #document.addPageTemplates(templates)
@@ -263,8 +301,8 @@ class Attendance(object):
 def parse_attendance(filename):
     lines = []
     with open(filename, 'rb') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        for row in spamreader:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in reader:
             lines.append(row)
 
     attendance = Attendance()
