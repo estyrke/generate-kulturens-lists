@@ -193,32 +193,16 @@ class Member(object):
 
 
 def parse_matrikel(filename):
-    f = open(filename, 'rU')
+    with open(filename, 'rU') as csvfile:
+        reader = csv.reader(csvfile, dialect='excel-tab')
+        members = []
+        header = reader.next()
+        for row in reader:
+            member = Member(row)
+            print member.__dict__
+            members.append(member)
 
-    pre_lines = f.readlines()[1:]
-    pre_lines.reverse()
-    lines = []
-    line = ""
-    for l in pre_lines:
-        line = l + line
-
-        d = line.split("\t")
-        if len(d) == 30:
-            lines.insert(0, line)
-            line = ""
-
-    if len(line) > 0:
-        lines.insert(0, line)
-
-    members = []
-    for l in lines:
-        d = l.split("\t")
-        member = Member(d)
-        members.append(member)
-        print member.__dict__
-
-    return members
-
+        return members
 
 class Attendance(object):
     def __init__(self):
