@@ -231,13 +231,12 @@ class Member(object):
 
 
 def parse_matrikel(filename):
-    with open(filename, 'rU') as csvfile:
+    with open(filename.decode('utf-8'), 'rU') as csvfile:
         reader = csv.reader(csvfile, dialect='excel-tab')
         members = []
         header = reader.next()
         for row in reader:
             member = Member(row)
-            print member.__dict__
             members.append(member)
 
         return members
@@ -300,7 +299,7 @@ class Attendance(object):
 
 def parse_attendance(filename):
     lines = []
-    with open(filename, 'rb') as csvfile:
+    with open(filename.decode('utf-8'), 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in reader:
             lines.append(row)
@@ -331,5 +330,4 @@ def main():
 
 
 if __name__=="__main__":
-    print pdfmetrics.standardFonts
     main()
