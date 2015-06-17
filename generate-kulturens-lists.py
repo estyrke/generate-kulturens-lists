@@ -131,6 +131,11 @@ def addPerson(canv, pos, member, attendance, **kwargs):
         canv.setFont("Times-Roman", 7)
         canv.drawString(52, y-11, member.pnr)
 
+        #Kryss för kvinna
+        if int(member.pnr[9]) % 2 == 0:
+            canv.setFont("Times-Bold", 10)
+            canv.drawString(62, y, "X")
+
     addAttendance(canv, y, attendance)
     canv.restoreState()
 
