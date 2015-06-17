@@ -299,7 +299,7 @@ class Attendance(object):
         for i, e in enumerate(self.events):
             total = sum([a[4][i] for a in self.attendees])
             if total != e[3]:
-                raise RuntimeError("Attendance mismatch for %s: %d vs %d", e[0], total, e[3])
+                raise RuntimeError("Attendance mismatch for %s: %d vs %d" % (e[0], total, e[3]))
 
 
 def parse_attendance(filename):
