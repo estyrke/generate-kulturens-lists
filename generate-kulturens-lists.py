@@ -41,7 +41,7 @@ import datetime
 from reportlab.platypus import PageTemplate, BaseDocTemplate, Frame
 from reportlab.platypus import NextPageTemplate, Paragraph, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.rl_config import defaultPageSize
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.graphics import renderPDF
@@ -51,8 +51,8 @@ from pdfrw import PdfReader
 from pdfrw.buildxobj import pagexobj
 from pdfrw.toreportlab import makerl
 
-PAGE_WIDTH = defaultPageSize[0]
-PAGE_HEIGHT = defaultPageSize[1]
+PAGE_WIDTH = A4[0]
+PAGE_HEIGHT = A4[1]
 
 
 class MyTemplate():
@@ -181,7 +181,7 @@ def addAttendance(canv, y, attendance):
 
 def create_pdf(filename, pdf_template_filename, members, attendance):
     """Create the pdf, with all the contents"""
-    pdf_report = canvas.Canvas(filename)
+    pdf_report = canvas.Canvas(filename, pagesize=A4)
     template = MyTemplate(pdf_template_filename)
 
     members.sort(key=lambda m: m.firstname)
