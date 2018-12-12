@@ -24,3 +24,5 @@ LEADERS = ["Supreme Leader", "Administratören"]
 MATRIKEL_FILE = "matrikel_2013h.txt"
 ATTENDANCE_FILE = "LKSS Närvaro 2013h - Närvaro.csv"
 OUTPUT_FILE = "Närvarorapport HT2013.pdf"
+
+BASE_URL = "https://example.com/"

@@ -31,7 +31,8 @@ De intressanta kolumnerna är dessa:
 
 """
 
-from config import *
+from .config import *
+from .internwebb import InternwebbReader
 
 __author__ = 'emil'
 
@@ -116,16 +117,16 @@ def addPerson(canv, pos, member, attendance, **kwargs):
 
     canv.drawString(96, y, member.firstname + " " + member.lastname)
 
-    addrLine = member.address1.decode("utf-8") + u", " + member.address2.decode("utf-8")
+    addrLine = member.address1.decode("utf-8") + ", " + member.address2.decode("utf-8")
     while canv.stringWidth(addrLine, "Times-Roman", 10) > 170:
         addrLine = addrLine[:-1]
     canv.drawString(96, y-10, addrLine)
 
     if member.homePhone:
-        canv.drawString(268, y, "B %s" % filter(lambda c: c in "01234567890+-", member.homePhone))
+        canv.drawString(268, y, "B %s" % [c for c in member.homePhone if c in "01234567890+-"])
 
     if member.mobile:
-        canv.drawString(268, y-9, "M %s" % filter(lambda c: c in "01234567890+-", member.mobile))
+        canv.drawString(268, y-9, "M %s" % [c for c in member.mobile if c in "01234567890+-"])
 
     if member.pnr:
         canv.setFont("Times-Roman", 7)
@@ -195,7 +196,7 @@ def create_pdf(filename, pdf_template_filename, members, attendance):
                 found = True
 
         if not found:
-            print "Member %s %s not found" % (a[0], a[1])
+            print("Member %s %s not found" % (a[0], a[1]))
 
     for page in range(0, len(members), 15):
         a2 = attendance
@@ -229,17 +230,18 @@ class Member(object):
         self.lastname = fields[6]
         self.mobile = fields[25] or None
         self.homePhone = fields[24] or None
-        self.address1 = ", ".join(filter(lambda x: len(x) > 0, fields[0:3]))
+        self.address1 = ", ".join([x for x in fields[0:3] if len(x) > 0])
         self.address2 = fields[16]
         self.pnr = fields[15] or None
         self.leader = self.firstname.strip() + " " + self.lastname.strip() in LEADERS
 
 
 def parse_matrikel(filename):
-    with open(filename.decode('utf-8'), 'rU') as csvfile:
+
+    with open(filename, 'r') as csvfile:
         reader = csv.reader(csvfile, dialect='excel-tab')
         members = []
-        header = reader.next()
+        header = next(reader)
         for row in reader:
             member = Member(row)
             members.append(member)
@@ -274,7 +276,7 @@ class Attendance(object):
             if i[0].strip() == firstname.strip() and i[1].strip() == lastname.strip():
                 return i[4]
 
-        print "Attendee %s %s not found" % (firstname, lastname)
+        print("Attendee %s %s not found" % (firstname, lastname))
         return [False for i in range(len(self.events))]
 
     def split(self, n):
