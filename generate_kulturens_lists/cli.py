@@ -2,7 +2,7 @@
 
 __doc__ = """Skript för att generera närvarolistor till Kulturens.
 
-Indata är en närvarorapport i CSV-format ("1" indikerar närvaro och "-" frånvaro):
+Indata är URL till en närvarorapport i Google Sheets med följande innehåll ("1" indikerar närvaro och "-" frånvaro):
 
        ,         ,      ,         ,Datum        ,2013-09-03   ,2013-09-10   ,[...]
        ,         ,      ,         ,Tid          ,19-21:30     ,19-21:30     ,[...]
@@ -12,28 +12,15 @@ Förnamn,Efternamn,Stämma,         ,             ,             ,             ,[
 Hans   ,Lundgren ,dir   ,         ,20           ,1            ,-            ,[...]
 [...]
 
-Samt en matrikel i tabbseparerat "CSV"-format. Första raden är rubriker, resterande rader är medlemmar, en per rad.
-De intressanta kolumnerna är dessa:
+Data ska ligga i ett blad som heter "Närvaro".
 
-  Kolumn 0: Adressrad 1
-  Kolumn 1: Adressrad 2
-  Kolumn 2: Adressrad 3
-  Kolumn 3-5: ignoreras
-  Kolumn 6: Efternamn
-  Kolumn 7-8: ignoreras
-  Kolumn 9: Förnamn
-  Kolumn 10-14: ignoreras
-  Kolumn 15: Personnummer
-  Kolumn 16: Postadress
-  Kolumn 17-23: ignoreras
-  Kolumn 24: Hemtelefon
-  Kolumn 25: Mobiltelefon
+Samt en matrikel i tabbseparerat "CSV"-format från internwebben.
 
 """
 
 from .internwebb import InternwebbReader
 from .googlesheets import AttendanceReader
-from .pdf import create_pdf
+from .pdf import PdfGenerator
 
 __author__ = 'emil'
 
@@ -43,7 +30,9 @@ import getpass
 import click
 import logging
 
-from . import config
+from .config import Config
+
+config = Config('config.json')
 
 @click.command()
 @click.option('--username', prompt='Användarnamn till internwebben', help='Användarnamn till internwebben')
@@ -58,10 +47,12 @@ def cli(username, password, url, output_filename, debug):
         logging.basicConfig()
     internwebb = InternwebbReader(config.BASE_URL, username, password)
     attendance = AttendanceReader(url)
+    pdf = PdfGenerator(config)
+
+    leaders = [l.strip() for l in config.LEADERS.split(',')]
     output_filename = output_filename or '{}.pdf'.format(attendance.get_title())
-    #matrikel = parse_matrikel(MATRIKEL_FILE)
-    #attendance = parse_attendance(ATTENDANCE_FILE)
-    create_pdf(output_filename, "narvarolista_tom.pdf", attendance.get_attendance(internwebb.get_all_users(), config.LEADERS))
+
+    pdf.create_pdf(output_filename, attendance.get_attendance(internwebb.get_all_users(), leaders))
 
 
 if __name__=="__main__":

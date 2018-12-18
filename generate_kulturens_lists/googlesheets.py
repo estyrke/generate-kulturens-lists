@@ -6,6 +6,7 @@ import datetime
 import logging
 import copy
 import bisect
+import os
 from functools import total_ordering
 
 from .errors import GenerateError
@@ -20,7 +21,7 @@ def authenticate():
     store = file.Storage('token.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+        flow = client.flow_from_clientsecrets(os.path.join(os.path.dirname(__file__), 'credentials.json'), SCOPES)
         creds = tools.run_flow(flow, store)
 
     return creds
@@ -49,7 +50,7 @@ class Attendee:
                     pass
                 else:
                     logging.error('Multiple active members with same name!')
-                    raise GenerateError('Flera aktiva medlemmar med namnet {} {}!'.format(m.firstname, m.lastname))
+                    raise GenerateError('Flera aktiva medlemmar med namnet {} {}!'.format(self.member.firstname, self.member.lastname))
             else:
                 if member.is_active:
                     logging.debug('New member is active, replacing.')
@@ -195,9 +196,11 @@ class Attendance(object):
             if total != e[3]:
                 raise RuntimeError("Attendance mismatch for %s: %d vs %d" % (e[0], total, e[3]))
 
-        num_leaders = len([a for a in self.attendees if a.leader])
-        if num_leaders != len(self.leaders):
-            raise GenerateError('Hittade {} ledare i kalkylarket, men {} var konfigurerade!'.format(num_leaders, len(leaders)))
+        leaders = [a for a in self.attendees if a.leader]
+        if len(leaders) != len(self.leaders):
+            print(leaders)
+            print(self.leaders)
+            raise GenerateError('Hittade {} ledare i kalkylarket, men {} var konfigurerade!'.format(len(leaders), len(self.leaders)))
 
 
 class AttendanceReader:

@@ -1,0 +1,9 @@
+{
+    "CHOIR_NAME": "Superkören",
+    "MEETING_ADDRESS1": "Första adressraden",
+    "MEETING_ADDRESS2": "900 00 Staden",
+    "MEETING_DAY": "ti",
+    "MEETING_TIME": "19-21:30",
+    "BASE_URL": "https://example.com/",
+    "LEADERS": "Förnamn Efternamn, Hjälpledare Svensson"
+}

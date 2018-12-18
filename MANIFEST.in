@@ -1,0 +1,4 @@
+include **/credentials.json
+include **/narvarolista_tom.pdf
+include **/config_example.json
+include README.md
